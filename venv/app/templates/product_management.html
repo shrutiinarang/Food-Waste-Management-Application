@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>{% if form.name.data %}Edit Product{% else %}Add Product{% endif %}</h2>
+<form method="POST">
+    {{ form.hidden_tag() }}
+    <div class="form-group">
+        {{ form.name.label }}
+        {{ form.name(class="form-control") }}
+    </div>
+    <div class="form-group">
+        {{ form.quantity.label }}
+        {{ form.quantity(class="form-control", type="number", step="0.01") }}
+    </div>
+    <div class="form-group">
+        {{ form.expiry_date.label }}
+        {{ form.expiry_date(class="form-control", type="date") }}
+    </div>
+    {{ form.submit(class="btn btn-primary") }}
+</form>
+{% endblock %}

@@ -1,0 +1,291 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div id="dashboard-container" data-product-count="{{ products|length }}">
+    <h2 class="mb-4 fade-in">Welcome to Your Dashboard</h2>
+
+    <!-- Debug section -->
+    <div class="card mb-4 fade-in">
+        <div class="card-body">
+            <h3 class="card-title">Debug Information</h3>
+            <p>Number of products: <span id="debug-product-count">{{ products|length }}</span></p>
+            <ul id="debug-product-list">
+            {% for product in products %}
+                <li>{{ product.name }} - Expires: {{ product.expiry_date }}</li>
+            {% else %}
+                <li>No products found.</li>
+            {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Summary cards -->
+    <div class="row mb-4">
+        <div class="col-md-4 fade-in">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Products</h5>
+                    <p class="card-text display-4" id="total-products">{{ products|length }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 fade-in">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Expiring Soon</h5>
+                    <p class="card-text display-4" id="expiring-soon">{{ products|selectattr('expiry_date', 'le', now().date() + timedelta(days=3))|list|length }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 fade-in">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Recycled</h5>
+                    <p class="card-text display-4" id="recycled">{{ products|selectattr('status', 'equalto', 'Recycled')|list|length }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>
+        #dashboard-container {
+            position: relative;
+            z-index: 1;
+        }
+        #add-product-btn {
+            position: relative;
+            z-index: 2;
+            background-color: #007bff;
+            border-color: #007bff;
+            color: white;
+            font-weight: bold;
+            padding: 10px 20px;
+            font-size: 1.1rem;
+        }
+        #add-product-btn:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+        .card {
+            overflow: visible;
+        }
+        .table-responsive {
+            overflow-x: auto;
+        }
+        .product-row {
+            transition: background-color 0.3s ease;
+        }
+        .product-row:hover {
+            background-color: #f8f9fa;
+        }
+    </style>
+    <!-- Products table -->
+    <div class="card fade-in shadow-sm">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="card-title m-0">Your Products</h3>
+                <a href="{{ url_for('product.add_product') }}" id="add-product-btn" class="btn btn-primary btn-lg animate__animated animate__pulse animate__infinite">
+                    <i class="bi bi-plus-circle me-2"></i>Add Product
+                </a>
+            </div>
+
+            <div id="products-table-container">
+                {% if products %}
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Name</th>
+                                <th>Quantity</th>
+                                <th>Expiry Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="product-table-body">
+                            {% for product in products %}
+                            <tr class="product-row animate__animated animate__fadeIn" data-product-id="{{ product.id }}">
+                                <td>{{ product.name }}</td>
+                                <td>{{ product.quantity }}</td>
+                                <td>{{ product.expiry_date.strftime('%Y-%m-%d') }}</td>
+                                <td>
+                                    <span class="badge rounded-pill bg-{{ 'success' if product.status == 'Active' else 'secondary' }}">
+                                        {{ product.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group" aria-label="Product actions">
+                                        <a href="{{ url_for('product.update_product', id=product.id) }}" class="btn btn-sm btn-outline-warning" data-bs-toggle="tooltip" title="Edit">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a href="{{ url_for('product.delete_product', id=product.id) }}" class="btn btn-sm btn-outline-danger delete-btn" data-bs-toggle="tooltip" title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                        {% if product.status != 'Recycled' %}
+                                        <a href="{{ url_for('product.recycle_product', id=product.id) }}" class="btn btn-sm btn-outline-success" data-bs-toggle="tooltip" title="Recycle">
+                                            <i class="bi bi-recycle"></i>
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info animate__animated animate__fadeIn">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    <p class="m-0">You don't have any products yet. Click the "Add Product" button to get started!</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let lastProductCount = parseInt(document.getElementById('dashboard-container').dataset.productCount);
+function handleFadeIn() {
+        const fadeElements = document.querySelectorAll('.fade-in:not(.active)');
+        fadeElements.forEach((el, index) => {
+            setTimeout(() => {
+                el.classList.add('active');
+            }, 100 * index);
+        });
+    }
+
+    // Run on page load
+    handleFadeIn();
+function updateDashboard() {
+    fetch('{{ url_for("main.dashboard") }}', {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Update summary cards
+        console.log("Received data:", data);  // Debug output
+
+        document.getElementById('total-products').textContent = data.products.length;
+        document.getElementById('expiring-soon').textContent = data.expiring_soon;
+        document.getElementById('recycled').textContent = data.recycled;
+
+        // Update debug information
+        document.getElementById('debug-product-count').textContent = data.products.length;
+        const debugList = document.getElementById('debug-product-list');
+        debugList.innerHTML = data.products.length > 0 
+            ? data.products.map(p => `<li>${p.name} - Expires: ${p.expiry_date}</li>`).join('')
+            : '<li>No products found.</li>';
+
+        // Update products table
+        const tableBody = document.getElementById('product-table-body');
+        if (data.products.length === 0) {
+            document.getElementById('products-table-container').innerHTML = `
+                <div class="alert alert-info animate__animated animate__fadeIn">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    <p class="m-0">You don't have any products yet. Click the "Add Product" button to get started!</p>
+                </div>
+            `;
+        } else if (!tableBody) {
+            // If table doesn't exist, create it
+            document.getElementById('products-table-container').innerHTML = `
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Name</th>
+                                <th>Quantity</th>
+                                <th>Expiry Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="product-table-body"></tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // Update or add rows
+        const updatedTableBody = document.getElementById('product-table-body');
+        if (updatedTableBody) {
+            data.products.forEach(product => {
+                let row = updatedTableBody.querySelector(`tr[data-product-id="${product.id}"]`);
+                if (!row) {
+                    row = document.createElement('tr');
+                    row.classList.add('product-row', 'animate__animated', 'animate__fadeIn');
+                    row.setAttribute('data-product-id', product.id);
+                    updatedTableBody.appendChild(row);
+                }
+                row.innerHTML = `
+                    <td>${product.name}</td>
+                    <td>${product.quantity}</td>
+                    <td>${product.expiry_date}</td>
+                    <td>
+                        <span class="badge rounded-pill bg-${product.status === 'Active' ? 'success' : 'secondary'}">
+                            ${product.status}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="btn-group" role="group" aria-label="Product actions">
+                            <a href="{{ url_for('product.update_product', id=0) }}".replace('0', product.id) class="btn btn-sm btn-outline-warning" data-bs-toggle="tooltip" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{{ url_for('product.delete_product', id=0) }}".replace('0', product.id) class="btn btn-sm btn-outline-danger delete-btn" data-bs-toggle="tooltip" title="Delete">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                            ${product.status !== 'Recycled' ? `
+                                <a href="{{ url_for('product.recycle_product', id=0) }}".replace('0', product.id) class="btn btn-sm btn-outline-success" data-bs-toggle="tooltip" title="Recycle">
+                                    <i class="bi bi-recycle"></i>
+                                </a>
+                            ` : ''}
+                        </div>
+                    </td>
+                `;
+            });
+
+            // Remove rows for products that no longer exist
+            Array.from(updatedTableBody.children).forEach(row => {
+                const productId = row.getAttribute('data-product-id');
+                if (!data.products.some(p => p.id.toString() === productId)) {
+                    row.remove();
+                }
+            });
+        }
+
+        // Reinitialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+
+        lastProductCount = data.products.length;
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+// Update the dashboard every 30 seconds
+setInterval(updateDashboard, 30000);
+
+// Event delegation for delete buttons
+document.addEventListener('click', function(e) {
+    if (e.target.closest('.delete-btn')) {
+        e.preventDefault();
+        if (confirm('Are you sure you want to delete this product?')) {
+            window.location.href = e.target.closest('a').href;
+        }
+    }
+});
+
+// Initialize tooltips on page load
+document.addEventListener('DOMContentLoaded', function() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row align-items-center">
+        <div class="col-lg-6 mb-5 mb-lg-0">
+            <h1 class="display-4 fw-bold mb-3 animate__animated animate__fadeInLeft">Welcome to Food Waste Management</h1>
+            <p class="lead mb-4 animate__animated animate__fadeInLeft animate__delay-1s">Manage your food inventory, reduce waste, and make a positive impact on the environment.</p>
+            <div class="animate__animated animate__fadeInUp animate__delay-2s">
+                <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg me-3 mb-3 mb-lg-0">Get Started</a>
+                <a href="#features" class="btn btn-outline-secondary btn-lg">Learn More</a>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <img src="{{ url_for('static', filename='img/food-waste.svg') }}" alt="Food Waste Management" class="img-fluid animate__animated animate__zoomIn">
+        </div>
+    </div>
+</div>
+
+<div class="container mt-5" id="features">
+    <h2 class="text-center mb-5 animate__animated animate__fadeInUp">Our Features</h2>
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm animate__animated animate__fadeInUp animate__delay-1s">
+                <div class="card-body text-center">
+                    <i class="bi bi-calendar-check fs-1 text-primary mb-3"></i>
+                    <h3 class="card-title">Track Expiry Dates</h3>
+                    <p class="card-text">Never let food go to waste again. Get timely reminders for expiring items.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm animate__animated animate__fadeInUp animate__delay-2s">
+                <div class="card-body text-center">
+                    <i class="bi bi-graph-up fs-1 text-success mb-3"></i>
+                    <h3 class="card-title">Inventory Management</h3>
+                    <p class="card-text">Efficiently manage your food inventory with our easy-to-use dashboard.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm animate__animated animate__fadeInUp animate__delay-3s">
+                <div class="card-body text-center">
+                    <i class="bi bi-recycle fs-1 text-info mb-3"></i>
+                    <h3 class="card-title">Recycling Tips</h3>
+                    <p class="card-text">Learn how to properly recycle and compost food waste to minimize environmental impact.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-5">
+    <div class="row align-items-center">
+        <div class="col-lg-6 order-lg-2 mb-5 mb-lg-0">
+            <h2 class="mb-4 animate__animated animate__fadeInRight">Join the Movement</h2>
+            <p class="lead animate__animated animate__fadeInRight animate__delay-1s">Be part of the solution to reduce food waste and create a more sustainable future. Start managing your food inventory today!</p>
+            <div class="animate__animated animate__fadeInUp animate__delay-2s">
+                <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">Sign Up Now</a>
+            </div>
+        </div>
+        <div class="col-lg-6 order-lg-1">
+            <img src="{{ url_for('static', filename='img/join-movement.svg') }}" alt="Join the Movement" class="img-fluid animate__animated animate__zoomIn">
+        </div>
+    </div>
+</div>
+
+<div class="container mt-5 mb-5">
+    <h2 class="text-center mb-4 animate__animated animate__fadeInUp">What Our Users Say</h2>
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm animate__animated animate__fadeInLeft">
+                <div class="card-body">
+                    <p class="card-text">"This app has completely changed how I manage my kitchen. I've reduced my food waste by 50%!"</p>
+                    <footer class="blockquote-footer mt-2">Sarah J.</footer>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm animate__animated animate__fadeInUp animate__delay-1s">
+                <div class="card-body">
+                    <p class="card-text">"The expiry date reminders are a game-changer. I never forget about food in the back of my fridge anymore."</p>
+                    <footer class="blockquote-footer mt-2">Mike T.</footer>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm animate__animated animate__fadeInRight">
+                <div class="card-body">
+                    <p class="card-text">"Not only am I saving money, but I feel good about reducing my environmental impact. Highly recommended!"</p>
+                    <footer class="blockquote-footer mt-2">Emily R.</footer>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/waypoints/4.0.1/noframework.waypoints.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const animatedElements = document.querySelectorAll('.animate__animated');
+        
+        animatedElements.forEach(element => {
+            new Waypoint({
+                element: element,
+                handler: function() {
+                    element.classList.add('animate__animated');
+                    this.destroy();
+                },
+                offset: '80%'
+            });
+        });
+    });
+</script>
+{% endblock %}
